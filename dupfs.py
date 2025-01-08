@@ -53,12 +53,14 @@ class dupfs(Operations):
         return os.chown(full_path, uid, gid)
 
     def getattr(self, path, fh=None):
+        # get method doesn't need root1
         full_path = self._full_path_root2(path)
         st = os.lstat(full_path)
         return dict((key, getattr(st, key)) for key in ('st_atime', 'st_ctime',
                      'st_gid', 'st_mode', 'st_mtime', 'st_nlink', 'st_size', 'st_uid'))
 
     def readdir(self, path, fh):
+        # read method doesn't need root1
         full_path = self._full_path_root2(path)
 
         dirents = ['.', '..']
@@ -68,6 +70,7 @@ class dupfs(Operations):
             yield r
 
     def readlink(self, path):
+        # read method doesn't need root1
         pathname = os.readlink(self._full_path_root2(path))
         if pathname.startswith("/"):
             # Path name is absolute, sanitize it.
