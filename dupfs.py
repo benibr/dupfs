@@ -101,6 +101,7 @@ class dupfs(Operations):
             'f_frsize', 'f_namemax'))
 
     def unlink(self, path):
+        os.unlink(self._full_path_root1(path))
         return os.unlink(self._full_path_root2(path))
 
     def symlink(self, name, target):
