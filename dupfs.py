@@ -47,8 +47,9 @@ class dupfs(Operations):
         return os.chmod(full_path, mode)
 
     def chown(self, path, path2, uid, gid):
-        full_path = self._full_path_root2(path)
+        full_path = self._full_path_root1(path)
         os.chown(full_path, uid, gid)
+        full_path = self._full_path_root2(path)
         return os.chown(full_path, uid, gid)
 
     def getattr(self, path, fh=None):
