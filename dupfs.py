@@ -89,6 +89,7 @@ class dupfs(Operations):
         return os.rmdir(full_path)
 
     def mkdir(self, path, mode):
+        os.mkdir(self._full_path_root1(path), mode)
         return os.mkdir(self._full_path_root2(path), mode)
 
     def statfs(self, path):
