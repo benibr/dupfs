@@ -113,6 +113,7 @@ class dupfs(Operations):
         return os.rename(self._full_path_root2(old), self._full_path_root2(new))
 
     def link(self, target, name):
+        os.link(self._full_path_root2(name), self._full_path_root2(target))
         return os.link(self._full_path_root2(name), self._full_path_root2(target))
 
     def utimens(self, path, times=None):
