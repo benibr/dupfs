@@ -110,6 +110,9 @@ class dupfs(Operations):
 
     def create(self, path, mode, fi=None):
         uid, gid, pid = fuse_get_context()
+        full_path = self._full_path_root1(path)
+        fd = os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
+        os.chown(full_path,uid,gid) #chown to context uid & gid
         full_path = self._full_path_root2(path)
         fd = os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
         os.chown(full_path,uid,gid) #chown to context uid & gid
@@ -140,7 +143,6 @@ class dupfs(Operations):
 
 def main(root1, root2, mountpoint):
     FUSE(dupfs(root1, root2), mountpoint, nothreads=True, foreground=True, allow_other=True)
-
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2], sys.argv[3])
