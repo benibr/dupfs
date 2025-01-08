@@ -33,6 +33,9 @@ class dupfs(Operations):
     # ==================
 
     def access(self, path, mode):
+        full_path = self._full_path_root1(path)
+        if not os.access(full_path, mode):
+            raise FuseOSError(errno.EACCES)
         full_path = self._full_path_root2(path)
         if not os.access(full_path, mode):
             raise FuseOSError(errno.EACCES)
