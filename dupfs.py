@@ -143,6 +143,7 @@ class dupfs(Operations):
         return os.read(fh, length)
 
     def write(self, path, buf, offset, fh):
+        # FIXME: how to handle root1 when only fh is given
         os.lseek(fh, offset, os.SEEK_SET)
         return os.write(fh, buf)
 
@@ -155,12 +156,15 @@ class dupfs(Operations):
             f.truncate(length)
 
     def flush(self, path, fh):
+        # FIXME: how relevant is the root1 here?
         return os.fsync(fh)
 
     def release(self, path, fh):
+        # FIXME: how relevant is the root1 here?
         return os.close(fh)
 
     def fsync(self, path, fdatasync, fh):
+        # FIXME: how relevant is the root1 here?
         return self.flush(path, fh)
 
 
