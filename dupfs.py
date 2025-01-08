@@ -105,6 +105,7 @@ class dupfs(Operations):
         return os.unlink(self._full_path_root2(path))
 
     def symlink(self, name, target):
+        os.symlink(target, self._full_path_root1(name))
         return os.symlink(target, self._full_path_root2(name))
 
     def rename(self, old, new):
