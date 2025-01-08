@@ -41,6 +41,8 @@ class dupfs(Operations):
             raise FuseOSError(errno.EACCES)
 
     def chmod(self, path, mode):
+        full_path = self._full_path_root1(path)
+        os.chmod(full_path, mode)
         full_path = self._full_path_root2(path)
         return os.chmod(full_path, mode)
 
