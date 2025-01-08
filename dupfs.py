@@ -79,6 +79,7 @@ class dupfs(Operations):
             return pathname
 
     def mknod(self, path, mode, dev):
+        os.mknod(self._full_path_root1(path), mode, dev)
         return os.mknod(self._full_path_root2(path), mode, dev)
 
     def rmdir(self, path):
