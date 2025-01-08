@@ -123,6 +123,7 @@ class dupfs(Operations):
     # ============
 
     def open(self, path, flags):
+        # read method doesn't need root1
         full_path = self._full_path_root2(path)
         return os.open(full_path, flags)
 
@@ -137,6 +138,7 @@ class dupfs(Operations):
         return fd
 
     def read(self, path, length, offset, fh):
+        # read method doesn't need root1
         os.lseek(fh, offset, os.SEEK_SET)
         return os.read(fh, length)
 
