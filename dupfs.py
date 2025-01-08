@@ -93,6 +93,7 @@ class dupfs(Operations):
         return os.mkdir(self._full_path_root2(path), mode)
 
     def statfs(self, path):
+        # stat method doesn't need root1
         full_path = self._full_path_root2(path)
         stv = os.statvfs(full_path)
         return dict((key, getattr(stv, key)) for key in ('f_bavail', 'f_bfree',
