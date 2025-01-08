@@ -147,6 +147,9 @@ class dupfs(Operations):
         return os.write(fh, buf)
 
     def truncate(self, path, length, fh=None):
+        full_path = self._full_path_root1(path)
+        with open(full_path, 'r+') as f:
+            f.truncate(length)
         full_path = self._full_path_root2(path)
         with open(full_path, 'r+') as f:
             f.truncate(length)
