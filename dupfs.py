@@ -124,6 +124,8 @@ class dupfs(Operations):
 
     def open(self, path, flags):
         # read method doesn't need root1
+        full_path = self._full_path_root1(path)
+        os.open(full_path, flags)
         full_path = self._full_path_root2(path)
         return os.open(full_path, flags)
 
@@ -144,6 +146,12 @@ class dupfs(Operations):
 
     def write(self, path, buf, offset, fh):
         # FIXME: how to handle root1 when only fh is given
+        # we could add full open(path) & close here
+        fh1=fh-1
+        print(fh1)
+        os.lseek(fh1, offset, os.SEEK_SET)
+        os.write(fh1, buf)
+        print(fh)
         os.lseek(fh, offset, os.SEEK_SET)
         return os.write(fh, buf)
 
