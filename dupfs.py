@@ -10,6 +10,9 @@ from fuse import FUSE, FuseOSError, Operations, fuse_get_context
 
 
 class dupfs(Operations):
+
+    fh_dup_lookup = {}
+
     def __init__(self, root1, root2):
         self.root1 = root1
         self.root2 = root2
@@ -145,8 +148,7 @@ class dupfs(Operations):
         return os.read(fh, length)
 
     def write(self, path, buf, offset, fh):
-        # FIXME: how to handle root1 when only fh is given
-        # we could add full open(path) & close here
+        # FIXME: this is probably super racy
         fh1=fh-1
         print(fh1)
         os.lseek(fh1, offset, os.SEEK_SET)
