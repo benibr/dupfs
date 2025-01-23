@@ -19,7 +19,6 @@ class dupfs(Operations):
 
     # Helpers
     # =======
-
     def _full_path_root1(self, partial):
         if partial.startswith("/"):
             partial = partial[1:]
@@ -35,25 +34,7 @@ class dupfs(Operations):
     # Filesystem methods
     # ==================
 
-    def access(self, path, mode):
-        full_path = self._full_path_root1(path)
-        if not os.access(full_path, mode):
-            raise FuseOSError(errno.EACCES)
-        full_path = self._full_path_root2(path)
-        if not os.access(full_path, mode):
-            raise FuseOSError(errno.EACCES)
-
-    def chmod(self, path, mode):
-        full_path = self._full_path_root1(path)
-        os.chmod(full_path, mode)
-        full_path = self._full_path_root2(path)
-        return os.chmod(full_path, mode)
-
-    def chown(self, path, path2, uid, gid):
-        full_path = self._full_path_root1(path)
-        os.chown(full_path, uid, gid)
-        full_path = self._full_path_root2(path)
-        return os.chown(full_path, uid, gid)
+    # read function, single fs access
 
     def getattr(self, path, fh=None):
         # get method doesn't need root1
@@ -65,7 +46,6 @@ class dupfs(Operations):
     def readdir(self, path, fh):
         # read method doesn't need root1
         full_path = self._full_path_root2(path)
-
         dirents = ['.', '..']
         if os.path.isdir(full_path):
             dirents.extend(os.listdir(full_path))
@@ -80,6 +60,27 @@ class dupfs(Operations):
             return os.path.relpath(pathname, self.root)
         else:
             return pathname
+
+    # write functions, double fs access
+    def access(self, path, mode):
+        full_path = self._full_path_root1(path)
+        if not os.access(full_path, mode):
+            raise FuseOSError(errno.EACCES)
+        full_path = self._full_path_root2(path)
+        if not os.access(full_path, mode):
+            raise FuseOSError(errno.EACCES)
+
+    def chmod(self, path, mode):
+        full_path = self._full_path_root1(path)
+        os.chmod(full_path, mode)
+        full_path = self._full_path_root2(path)
+        return os.chmod(full_path, mode)
+
+    def chown(self, path, uid, gid):
+        full_path = self._full_path_root1(path)
+        os.chown(full_path, uid, gid)
+        full_path = self._full_path_root2(path)
+        return os.chown(full_path, uid, gid)
 
     def mknod(self, path, mode, dev):
         os.mknod(self._full_path_root1(path), mode, dev)
@@ -128,9 +129,11 @@ class dupfs(Operations):
     def open(self, path, flags):
         # read method doesn't need root1
         full_path = self._full_path_root1(path)
-        os.open(full_path, flags)
+        fh_r1 = os.open(full_path, flags)
         full_path = self._full_path_root2(path)
-        return os.open(full_path, flags)
+        fh_r2 = os.open(full_path, flags)
+        self.fh_dup_lookup[fh_r2] = fh_r1
+        return fh_r2
 
     def create(self, path, mode, fi=None):
         uid, gid, pid = fuse_get_context()
