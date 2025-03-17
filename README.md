@@ -10,6 +10,7 @@ dupfs is the draft of a FUSE filesystem that duplicates every operation onto two
  * add map for FDs
  * full function support
  * README with examples and explenation
+ * Tests
 
 ## Caveats
 
