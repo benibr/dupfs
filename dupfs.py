@@ -128,38 +128,36 @@ class dupfs(Operations):
     # ============
 
     def open(self, path, flags):
-        # read method doesn't need secondary
+        # FIXME: need fd map
         full_path = self._full_path_secondary(path)
-        fh_r1 = os.open(full_path, flags)
+        fh_secondary = os.open(full_path, flags)
         full_path = self._full_path_primary(path)
-        fh_r2 = os.open(full_path, flags)
-        self.fh_dup_lookup[fh_r2] = fh_r1
-        return fh_r2
+        fh_primary = os.open(full_path, flags)
+        self.fh_dup_lookup[fh_primary] = fh_secondary
+        return fh_primary
 
     def create(self, path, mode, fi=None):
         uid, gid, pid = fuse_get_context()
         full_path = self._full_path_secondary(path)
-        fd = os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
+        fh_secondary = os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
         os.chown(full_path,uid,gid) #chown to context uid & gid
         full_path = self._full_path_primary(path)
-        fd = os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
+        fh_primary = os.open(full_path, os.O_WRONLY | os.O_CREAT, mode)
         os.chown(full_path,uid,gid) #chown to context uid & gid
-        return fd
+        self.fh_dup_lookup[fh_primary] = fh_secondary
+        return fh_primary
 
     def read(self, path, length, offset, fh):
         # read method doesn't need secondary
         os.lseek(fh, offset, os.SEEK_SET)
         return os.read(fh, length)
 
-    def write(self, path, buf, offset, fh):
-        # FIXME: this is probably super racy
-        fh1=fh-1
-        print(fh1)
-        os.lseek(fh1, offset, os.SEEK_SET)
-        os.write(fh1, buf)
-        print(fh)
-        os.lseek(fh, offset, os.SEEK_SET)
-        return os.write(fh, buf)
+    def write(self, path, buf, offset, fh_primary):
+        fh_secondary=self.fh_dup_lookup[fh_primary]
+        os.lseek(fh_secondary, offset, os.SEEK_SET)
+        os.write(fh_secondary, buf)
+        os.lseek(fh_primary, offset, os.SEEK_SET)
+        return os.write(fh_primary, buf)
 
     def truncate(self, path, length, fh=None):
         full_path = self._full_path_secondary(path)
@@ -169,17 +167,20 @@ class dupfs(Operations):
         with open(full_path, 'r+') as f:
             f.truncate(length)
 
-    def flush(self, path, fh):
-        # FIXME: how relevant is the secondary here?
-        return os.fsync(fh)
+    def flush(self, path, fh_primary):
+        # flush is called with every fh explicitly
+        return os.fsync(fh_primary)
 
-    def release(self, path, fh):
-        # FIXME: how relevant is the secondary here?
-        return os.close(fh)
+    def release(self, path, fh_primary):
+        fh_secondary=self.fh_dup_lookup[fh_primary]
+        os.close(fh_secondary)
+        del self.fh_dup_lookup[fh_primary]
+        return os.close(fh_primary)
 
-    def fsync(self, path, fdatasync, fh):
-        # FIXME: how relevant is the secondary here?
-        return self.flush(path, fh)
+    def fsync(self, path, fdatasync, fh_primary):
+        fh_secondary=self.fh_dup_lookup[fh_primary]
+        self.flush(path, fh_secondary)
+        return self.flush(path, fh_primary)
 
 
 def main():
