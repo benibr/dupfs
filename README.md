@@ -6,11 +6,15 @@ dupfs is the draft of a FUSE filesystem that duplicates every operation onto two
 
 ## Usage
 
-## TODO:
- * add map for FDs
- * full function support
- * README with examples and explenation
- * Tests
+```
+uv venv
+source .venv/bin/activate
+uv pip install -r ./requirements.yml
+make
+```
+
+As long as dupfs runs, all writes to `/mountpoint` will be written to `/primary` **and** `/secondary`.
+
 
 ## Caveats
 
