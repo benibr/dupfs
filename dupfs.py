@@ -5,6 +5,7 @@ from __future__ import with_statement
 import os
 import sys
 import errno
+import argparse
 
 from fuse import FUSE, FuseOSError, Operations, fuse_get_context
 
@@ -181,8 +182,25 @@ class dupfs(Operations):
         return self.flush(path, fh)
 
 
-def main(root1, root2, mountpoint):
-    FUSE(dupfs(root1, root2), mountpoint, nothreads=True, foreground=True, allow_other=True)
+def main():
+    parser = argparse.ArgumentParser(description='duplicate filesystem I/O to a secondary location')
+
+    # Optional parameter
+    parser.add_argument('--primary', type=str, help='The primary directory where the I/O is written to.')
+    parser.add_argument('--secondary', type=str, help='The directory where the I/O is duplicated to.')
+    #parser.add_argument('--mirror', type=str, required=True, help='Same as --secondary')
+    parser.add_argument('--mountpoint', type=str, help='The mountpoint where dupfs is mounted to.')
+
+    # Positional parameter
+
+    args = parser.parse_args()
+
+    # Print the arguments for demonstration purposes
+    print(f"primary: {args.primary}")
+    print(f"secondary: {args.secondary}")
+    print(f"mountpoint: {args.mountpoint}")
+
+    FUSE(dupfs(args.primary, args.secondary), args.mountpoint, nothreads=True, foreground=True, allow_other=True, nonempty=True)
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], sys.argv[3])
+    main()
