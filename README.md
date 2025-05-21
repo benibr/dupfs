@@ -18,5 +18,5 @@ As long as dupfs runs, all writes to `/mountpoint` will be written to `/primary`
 
 ## Caveats
 
-* Files already existing in primary directory won't be copied to secondary. Manual stage would be necessary.
+* Files already existing in primary directory won't be copied to secondary. Manual staging would be necessary.
 * No error handling. Error in secondary can prevent the FS to work. Remember this is not for production ;-)
